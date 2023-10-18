@@ -3026,7 +3026,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element,
         {
           int sizeLimit = qMin(qMin(r.width(), r.height()), dspec.size);
           //if(!( sizeLimit&1)) --sizeLimit; // make it odd
-          expanderAdjust = static_cast<qreal>(sizeLimit)/2 + static_cast<qreal>(1);
+          expanderAdjust = static_cast<qreal>(sizeLimit)/2;
         }
       }
 
@@ -3044,32 +3044,25 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element,
           col = option->palette.color(QPalette::Dark);
         if (!col.isValid()) break;
 
-        /* With a translucent light/dark color, small overlaps are visible. They could be
-           avoided by adding or subtracting 1 in proper places, but that method would cause
-           gaps on mouse-over with scale factors. As a workaround, we make the color opaque. */
-        QColor baseCol = standardPalette().color(QPalette::Base);
-        baseCol.setAlpha(255);
-        col = overlayColor(baseCol, col);
-
         painter->save();
         painter->setPen(col);
         if (option->state & (State_Item | State_Children | State_Sibling))
         {
-          const QLineF line(QPointF(centerX, rf.top()), QPointF(centerX, centerY - expanderAdjust));
+          const QLineF line(QPointF(centerX, rf.top() + 0.5), QPointF(centerX, centerY - expanderAdjust));
           painter->drawLine(line);
         }
         // the right/left (depending on dir) line will be drawn if there is an item
         if (option->state & State_Item)
         {
           const QLineF line = rtl ?
-                QLineF(QPointF(rf.left(), centerY), QPointF(centerX - expanderAdjust, centerY)) :
-                QLineF(QPointF(centerX + expanderAdjust, centerY), QPointF(rf.right(), centerY));
+                QLineF(QPointF(rf.left() + 1, centerY), QPointF(centerX - expanderAdjust - 1, centerY)) :
+                QLineF(QPointF(centerX + expanderAdjust + 1, centerY), QPointF(rf.right() - 1, centerY));
           painter->drawLine(line);
         }
         // the bottom if we have a sibling
         if (option->state & State_Sibling)
         {
-          const QLineF line(QPointF(centerX, centerY + expanderAdjust), QPointF(centerX, rf.bottom()));
+          const QLineF line(QPointF(centerX, centerY + expanderAdjust + 1), QPointF(centerX, rf.bottom() - 0.5));
           painter->drawLine(line);
         }
         painter->restore();
